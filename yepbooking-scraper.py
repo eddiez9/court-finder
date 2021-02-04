@@ -17,7 +17,7 @@ print("Fetching:" + site + " Location:" + str(location) + " " + str(day) + "/" +
 
 html_text = requests.get("https://" + schema_url, params={"day": day, "month": month, "year": year, "id_sport": location}).text
 
-soup = BeautifulSoup(html_text, "html.parser")
+soup = BeautifulSoup(html_text, "html5lib")
 
 lanes_table = soup.find_all("table", class_= "schemaLaneTable")
 
@@ -42,18 +42,27 @@ for item in availability_table:
     col_width = len(times_list)
     col_count = 0
     lane_count = 0
-
-    slots = rows[2].find_all("td", class_="hour")
-    for slot in slots:
-        if "title" in slot.attrs:
-
+    
+    for x in range(2, len(rows)-1):
+        slots = rows[x].find_all("td", class_="hour")
+        for slot in slots:
             if col_count == 0:
                 print(lanes_list[lane_count])
                 lane_count += 1
 
-            col_count += int(slot.attrs["colspan"])
-            print(slot.attrs["title"])
+            # If time slot closed/booked
+            if "title" in slot.attrs:
+                col_count += int(slot.attrs["colspan"])
+                print(slot.attrs["title"])
+
+            # If time slot available
+            else:
+                col_count += 1
+                print (slot.contents[0].attrs["title"])
 
             if col_count == col_width:
                 print("-----")
                 col_count = 0
+                
+
+                
